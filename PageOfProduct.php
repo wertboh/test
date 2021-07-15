@@ -60,6 +60,15 @@
             width: 100px;
         }
     </style>
+    <script type="text/javascript">
+        function openImageWindow(src) {
+            var image = new Image();
+            image.src = src;
+            var width = image.width;
+            var height = image.height;
+            window.open(src, "Image", "width=" + width + ",height=" + height);
+        }
+    </script>
 </head>
 <body>
 <img src="Photo/photoProduct.png" alt="bb cream" class="photo">
@@ -73,11 +82,14 @@
 <center><br>
     <fieldset>
         <form id="comment_on_product">
-            <br><input type="email" id="email" name="email" placeholder="Email"><br>
-            <div id="massage_email" style="color:indianred"></div>
+            <br><input type="email" id="email" name="email" required placeholder="Email"><br>
+            <div id="massage_email_exist" style="color:indianred"></div>
+            <div id="massage_email_format" style="color:indianred"></div>
             <br>
-            <br><input type="text" id="nameUser" name="nameUser" placeholder="Firstname"><br>
-            <div id="massage_nameUser" style="color:indianred"></div>
+            <br><input type="text" id="nameUser" name="nameUser" minlength="6" required placeholder="Firstname"><br>
+            <div id="massage_nameUserSize" style="color:indianred"></div>
+            <br>
+            <div id="massage_nameUserExist" style="color:indianred"></div>
             <br>
             <div class="text">Select rating</div>
             <br><input type="radio" id="rating1" name="rating" value="1">1&nbsp;
@@ -87,7 +99,7 @@
             <input type="radio" name="rating" value="5">5<br>
             <div id="massage_rating" style="color:indianred"></div>
             <br>
-            <br><textarea name="comment" placeholder="Put your comment..." id="comment"></textarea><br>
+            <br><textarea name="comment" placeholder="Put your comment..." id="comment" maxlength="1000"></textarea><br>
             <div id="massage_comment" style="color:indianred"></div>
             <input type="file" id="file" name="picture" class="download" multiple accept="image/*">
             <div id="massage_file" style="color:indianred"></div>
@@ -96,10 +108,8 @@
         </form>
     </fieldset>
 </center>
-
-<div id="comment_0"> </div>
-
 <div id="result_form"></div>
 <script src="ajaxPageOfProduct.js"></script>
+<div id="comment_0"></div>
 </body>
 </html>

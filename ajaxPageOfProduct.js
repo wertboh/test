@@ -1,31 +1,36 @@
-var data = new FormData();
 $(document).ready(function () {
     $("#submitbtn").click(function () {
         ajaxPageOfProduct("result_form", "comment_on_product", "insertComment.php");
+
         return false;
     });
 });
 
 function ajaxPageOfProduct(result_form, comment_on_product, url) {
+    let data = new FormData();
     let dataForm = $("#" + comment_on_product).serializeArray()
-    debugger
     let count_error = 0;
     let use_rating = false
     for (i = 0; i < dataForm.length; i++) {
-        if (dataForm[i].name === 'email' && !dataForm[i].value) {
-            $("#massage_email").html("Error. Please enter email");
+        if (dataForm[i].name === 'email' && !dataForm[i].value.match(/[0-9a-z]+@[a-z]/)) {
+            $("#massage_email_format").html("Error. Please enter correct email");
             count_error++;
-        } else if (dataForm[i].name === 'email') $("#massage_email").html('')
+        } else if (dataForm[i].name === 'email') $("#massage_email_format").html('')
+
+        if (dataForm[i].name === 'email' && !dataForm[i].value) {
+            $("#massage_email_exist").html("Error. Please enter email");
+            count_error++;
+        } else if (dataForm[i].name === 'email') $("#massage_email_exist").html('')
 
         if (dataForm[i].name === 'nameUser' && !dataForm[i].value) {
-            $("#massage_nameUser").html("Error. Please enter name");
+            $("#massage_nameUserExist").html("Error. Please enter name");
             count_error++;
-        } else if (dataForm[i].name === 'nameUser') $("#massage_nameUser").html('')
+        } else if (dataForm[i].name === 'nameUser') $("#massage_nameUserExist").html('')
 
         if (dataForm[i].name === 'nameUser' && dataForm[i].value.length < 6) {
             count_error++;
-            $("#massage_nameUser").html("Error. Minimum 6 characters");
-        } else if (dataForm[i].name === 'nameUser') $("#massage_nameUser").html('')
+            $("#massage_nameUserSize").html("Error. Minimum 6 characters");
+        } else if (dataForm[i].name === 'nameUser') $("#massage_nameUserSize").html('')
 
         if (dataForm[i].name === 'rating') use_rating = true
 
@@ -51,29 +56,52 @@ function ajaxPageOfProduct(result_form, comment_on_product, url) {
         }
         jQuery.each($('#file')[0].files, function (i, file) {
             data.append('picture[]', file);
+
+        });
+
+        $.ajax({
+            url: url,
+            type: "POST",
+            cache: false,
+            contentType: false,
+            processData: false,
+            data: data,
+            success: function (response) {
+                response = JSON.parse(response)
+                if (!response.data) {
+                    if (response.emailFormat === true) {
+                        $("#massage_email_format").html("Error. Please enter correct email");
+                    }
+                    if (response.emailEmpty === true) {
+                        $("#massage_email_exist").html("Error. Please enter email");
+                    }
+                    if (response.nameUserEmpty === true) {
+                        $("#massage_nameUserExist").html("Error. Please enter name");
+                    }
+                    if (response.nameUserSize === true) {
+                        $("#massage_nameUserSize").html("Error. Minimum 6 characters");
+                    }
+                    if (response.rating === true) {
+                        $("#massage_rating").html("Error. Please choose rating");
+                    }
+                    if (response.comment === true) {
+                        $("#massage_comment").html("Error. Maximum 1000 characters");
+                    }
+                } else if (response.data) {
+                    $("#comment_0").after(function () {
+                        return response.data
+                    });
+                    // $("#email").val('');
+                    // $('#nameUser').val('');
+                    // $('#comment').val('');
+                    // $('#file').val('');
+                    $('#comment_on_product')[0].reset();
+                }
+            },
+            error: function (response) {
+                alert(response);
+                $("#result_form").html("Error. Your data has not been sent.");
+            }
         });
     }
-
-    $.ajax({
-        url: url,
-        type: "POST",
-        cache: false,
-        contentType: false,
-        processData: false,
-        data: data,
-        success: function (response) {
-            $("#comment_0").append(response);
-            $("#email").val('');
-            $('#nameUser').val('');
-            $('#comment').val('');
-            $('#file').val('');
-            // var newFileList = Array.from($('#file')[0].files);
-            // newFileList.splice(index,1);
-
-        },
-        error: function (response) {
-            alert(response);
-            $("#result_form").html("Error. Your data has not been sent.");
-        }
-    });
 }

@@ -1,6 +1,48 @@
 <?php
-$date = date("d-m-Y, h:i:s");
+$date = date("Y-m-d H:i:s");
 $db = new PDO('mysql:dbname=commentaboutgoods;host=127.0.0.1;', 'root', 'root');
+$count = 0;
+$jsonarray = [
+    'emailFormat' => false,
+    'emailEmpty' => false,
+    'nameUserEmpty' => false,
+    'nameUserSize' => false,
+    'rating' => false,
+    'comment' => false
+];
+
+if (!preg_match("/[0-9a-z]+@[a-z]/", $_POST['email'])) {
+    $jsonarray['emailFormat'] = true;
+    $count++;
+}
+
+if (empty($_POST['email'])) {
+    $jsonarray['emailEmpty'] = true;
+    $count++;
+}
+
+if (empty($_POST['nameUser'])) {
+    $jsonarray['nameUserEmpty'] = true;
+    $count++;
+}
+
+if (strlen($_POST['nameUser']) < 6) {
+    $jsonarray['nameUserSize'] = true;
+    $count++;
+}
+
+if (empty($_POST['rating'])) {
+    $jsonarray['rating'] = true;
+    $count++;
+}
+
+if (strlen($_POST['comment']) > 1000) {
+    $jsonarray['comment'] = true;
+    $count++;
+}
+if ($count > 0) {
+    echo json_encode($jsonarray);
+}
 
 $statements = $db->prepare('INSERT INTO comments (email, nameUser, rating, comment, date)
 VALUES (:email, :nameUser, :rating, :comment, :date)');
@@ -29,15 +71,21 @@ if (!empty($_FILES)) {
         @copy($_FILES['picture']['tmp_name'][$key], 'Photo/' . $value);
     }
 }
+
 $_FILES = [];
 $_POST = [];
+
 $statements = $db->prepare('SELECT * FROM photos WHERE id_comment = :id_comment');
 $statements->bindParam(':id_comment', $comment['id_comment']);
 $statements->execute();
 $photos = $statements->fetchAll(PDO::FETCH_ASSOC);
 $comment['photos'] = $photos;
+
 extract($comment);
 ob_start();
-include 'viewComment.php';
+$data = include 'viewComment.php';
 $comment = ob_get_contents();
+
+echo json_encode(['data' => $data]);
+
 
